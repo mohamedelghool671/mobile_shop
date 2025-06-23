@@ -6,75 +6,129 @@ use App\Models\Product;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
 use App\Interfaces\ProductReposityInterface;
-use SocialiteProviders\Facebook\FacebookExtendSocialite;
+
 class ProductReposity implements ProductReposityInterface
 {
-public function all($limit,$category_id) {
-    $key = 'products_' . ($category_id ?? 'all') . '_' . ($limit ?? 'default');
-    $products = Cache::remember($key, 60, function () use ($limit, $category_id) {
-        $query = Product::with(['category', 'comment', 'users']);
-        if ($category_id) {
-            $query->where('category_id', $category_id);
-        }
-        return $query->paginate($limit);
-    });
+    public function all($limit, $category_id)
+    {
+        $key = 'products_' . ($category_id ?? 'all') . '_' . ($limit ?? 'default');
+        return Cache::remember($key, 60, function () use ($limit, $category_id) {
+            $query = Product::with(['category', 'comment.user'])
+                ->withCount(['comment as rating' => function ($q) {
+                    $q->select(DB::raw("avg(rating)"));
+                }])
+                ->addSelect([
+                    'is_favourite' => DB::table('favourites')
+                        ->selectRaw('1')
+                        ->whereColumn('favourites.product_id', 'products.id')
+                        ->where('favourites.user_id', auth()->id())
+                        ->limit(1)
+                ]);
 
-    return $products;
-}
+            if ($category_id) {
+                $query->where('category_id', $category_id);
+            }
 
-    public function store($request) {
-        return Product::create($request);
+            return $query->paginate($limit);
+        });
     }
 
-    public function update($product,$request) {
-        $product->update($request);
-        return $product;
+    public function store($data)
+    {
+        return Product::create($data);
     }
 
-    public function delete($product) {
-        $product->delete();
+    public function update($product, $data)
+    {
+        return tap($product, function ($product) use ($data) {
+            return $product->update($data);
+        });
+    }
+
+    public function delete($product)
+    {
+        return $product->delete();
     }
 
     public function latest()
     {
-        $latest = Cache::remember('latest',60,function() {
-            return Product::with(['comment','category'])->latest("id")->paginate(10);
+        return Cache::remember('latest', 60, function () {
+            return Product::with(['comment.user', 'category'])
+                ->withCount(['comment as rating' => function ($q) {
+                    $q->select(DB::raw("avg(rating)"));
+                }])
+                ->addSelect([
+                    'is_favourite' => DB::table('favourites')
+                        ->selectRaw('1')
+                        ->whereColumn('favourites.product_id', 'products.id')
+                        ->where('favourites.user_id', auth()->id())
+                        ->limit(1)
+                ])
+                ->latest("id")
+                ->paginate(10);
         });
-        return $latest;
     }
 
-    public function userVisite($request)
+    public function userVisite()
     {
-        $user = $request->user();
-        $products = $user->products()
-            ->with('category', 'comment')
+        $user = auth()->user();
+        return $user->products()
+            ->with(['category', 'comment.user'])
+            ->withCount(['comment as rating' => function ($q) {
+                $q->select(DB::raw("avg(rating)"));
+            }])
+            ->addSelect([
+                'is_favourite' => DB::table('favourites')
+                    ->selectRaw('1')
+                    ->whereColumn('favourites.product_id', 'products.id')
+                    ->where('favourites.user_id', $user->id)
+                    ->limit(1)
+            ])
             ->orderByDesc('product_views.visit_count')
             ->take(20)
             ->get();
-        return $products;
-
     }
 
     public function allVisite()
     {
-        $products = Product::query()
-        ->join('product_views', 'products.id', '=', 'product_views.product_id')
-        ->groupBy('products.id')
-        ->orderByDesc(DB::raw('SUM(product_views.visit_count)'))
-        ->select('products.*', DB::raw('SUM(product_views.visit_count) as total_visits'))
-        ->with('category','comment')
-        ->take(20)
-        ->get();
-        return $products;
+        return Product::query()
+            ->join('product_views', 'products.id', '=', 'product_views.product_id')
+            ->groupBy('products.id')
+            ->orderByDesc(DB::raw('SUM(product_views.visit_count)'))
+            ->select(
+                'products.*',
+                DB::raw('SUM(product_views.visit_count) as total_visits'),
+                DB::raw('MAX(product_views.last_visit) as last_visit')
+            )
+            ->with(['category', 'comment.user'])
+            ->withCount(['comment as rating' => function ($q) {
+                $q->select(DB::raw("avg(rating)"));
+            }])
+            ->addSelect([
+                'is_favourite' => DB::table('favourites')
+                    ->selectRaw('1')
+                    ->whereColumn('favourites.product_id', 'products.id')
+                    ->where('favourites.user_id', auth()->id())
+                    ->limit(1)
+            ])
+            ->take(20)
+            ->get();
     }
 
-    public function search($query) {
-        $product = Product::query();
-        if (is_numeric($query)) {
-            $product->where('price', $query * 100);
-        } else {
-            $product->where('name', 'LIKE', "%$query%");
-        }
-        return $product->get();
+    public function search($query)
+    {
+        return Product::with(['category', 'comment.user'])
+            ->withCount(['comment as rating' => function ($q) {
+                $q->select(DB::raw("avg(rating)"));
+            }])
+            ->addSelect([
+                'is_favourite' => DB::table('favourites')
+                    ->selectRaw('1')
+                    ->whereColumn('favourites.product_id', 'products.id')
+                    ->where('favourites.user_id', auth()->id())
+                    ->limit(1)
+            ])
+            ->where('name', 'LIKE', "%$query%")
+            ->get();
     }
 }

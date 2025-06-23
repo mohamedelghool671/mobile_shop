@@ -16,7 +16,7 @@ class ContactNotification extends Notification
     /**
      * Create a new notification instance.
      */
-    public function __construct(public string $email , public $contact,public array $replay)
+    public function __construct(public $sender , public $name,public array $replay)
     {
         //
     }
@@ -37,23 +37,12 @@ class ContactNotification extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-        ->from("$this->email", 'Support Team')
+        ->from("$this->sender", 'Support Team')
         ->subject('Reply to your message')
         ->markdown('mail.contact-notification', [
-            'reciver' => $this->contact->first_name,
+            'reciver' => $this->name,
             'reply' => $this->replay,
         ]);
     }
 
-    /**
-     * Get the array representation of the notification.
-     *
-     * @return array<string, mixed>
-     */
-    public function toArray(object $notifiable): array
-    {
-        return [
-            //
-        ];
-    }
 }

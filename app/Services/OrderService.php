@@ -2,19 +2,17 @@
 
 namespace App\Services;
 
-use App\Models\Cart;
-use App\Models\Order;
+
 use App\Helpers\Paginate;
 use App\Models\OrderItem;
-use App\Helpers\ApiResponse;
-use App\Reposities\OrderReposity;
-use App\Notifications\OrderDeliverd;
+use App\Helpers\SendNotification;
 use App\Http\Resources\OrderResource;
-use Illuminate\Support\Facades\Notification;
+use App\Interfaces\OrderReposiyInterface;
+use App\Reposities\CartReposity;
 
 class OrderService
 {
-    public function __construct(protected OrderReposity $orderRepository)
+    public function __construct(protected OrderReposiyInterface $orderRepository)
     {
 
     }
@@ -22,23 +20,19 @@ class OrderService
     public function index($limit = 10)
     {
         $orders =  $this->orderRepository->index($limit);
-        $data = Paginate::paginate($orders, OrderResource::collection($orders), "orders");
-
-        if ($data) {
-            return ApiResponse::sendResponse("list of orders", 200, $data);
-        }
-
-        return ApiResponse::sendResponse("no orders");
+        return Paginate::paginate($orders, OrderResource::collection($orders), "orders");
     }
 
-    public function store($data, $user)
+    public function store($data)
     {
-        $cart = Cart::where('user_id', $user->id)->first();
+        $user = auth()->user();
+        $cart = new CartReposity();
+        $cart = $cart->find($user->id);
         if (!$cart || $cart->items->isEmpty()) {
-            return ['error' => 'Cart is empty.'];
+            return false;
         }
         $data['user_id'] = $user->id;
-        $order = $this->orderRepository->store($data,$user);
+        $order = $this->orderRepository->store($data->toArray());
         foreach ($cart->items as $item) {
             OrderItem::create([
                 'order_id' => $order->id,
@@ -49,38 +43,26 @@ class OrderService
             ]);
         }
         $cart->items()->delete();
-        return ApiResponse::sendResponse("order placed successfully", 200, ['order_id' => $order->id]);
+        return true;
     }
 
-    public function showUserOrders($user)
+    public function showUserOrders()
     {
-        $orders = $this->orderRepository->showUserOrders($user);
-        if ($orders) {
-            return ApiResponse::sendResponse("return order success", 200, OrderResource::collection($orders));
-        }
-        return ApiResponse::sendResponse("no orders", 422);
+        return $this->orderRepository->showUserOrders();
     }
 
     public function updateStatus($id, $status)
     {
-        $updated = $this->orderRepository->updateStatus($id, $status);
-        if ($updated) {
-            $order = Order::find($id);
-            if ($order && $status === 'delivered') {
-                Notification::route('mail', $order->user->email)
-                    ->notify(new OrderDeliverd($order, $order->user));
-            }
-            return ApiResponse::sendResponse("order status updated successfully", 200);
-        }
-        return ApiResponse::sendResponse("record not found", 422);
+        $order = $this->orderRepository->updateStatus($id, $status);
+        SendNotification::sendTo($order->user,[
+            "title" => "order status",
+            "body" => "yor order is $order->status please wait "
+        ]);
+           return $order;
     }
 
     public function cancel($id)
     {
-        $result = $this->orderRepository->cancel($id);
-        if ($result === true) {
-            return ApiResponse::sendResponse("order canceled successfully", 200);
-        }
-        return ApiResponse::sendResponse($result['error'], 422);
+        return $this->orderRepository->cancel($id);
     }
 }

@@ -8,18 +8,16 @@ use App\Models\Cart;
 class CartReposity implements CartReposityInterface
 {
 
-    public function find($user_id) {
-        return Cart::with('items')->where('user_id',$user_id)->first();
+    public function find($userId) {
+        return Cart::with('items')->where('user_id',$userId)->first();
     }
-    public function all($request) {
-        $cart = $this->find($request->user()->id);
-                return $cart;
+    public function all() {
+       return $this->find(auth()->id());
     }
 
-    public function create($request) {
-        $cart = Cart::firstOrCreate([
-            'user_id' => $request->user()->id
+    public function create($data) {
+        return Cart::firstOrCreate([
+            'user_id' =>auth()->id()
         ]);
-            return $cart;
     }
 }

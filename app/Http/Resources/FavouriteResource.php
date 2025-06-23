@@ -16,6 +16,7 @@ class FavouriteResource extends JsonResource
     {
         return [
                 'product_id' => $this->product_id,
+                 'favourite_id' => $this->id,
                 'product_details' => [
                 'product_name' => $this->product->name,
                 'product_price' => $this->product->price / 100,

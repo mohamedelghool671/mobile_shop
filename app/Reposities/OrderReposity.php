@@ -2,11 +2,8 @@
 
 namespace App\Reposities;
 
-use App\Models\Cart;
+
 use App\Models\Order;
-use App\Models\OrderItem;
-use App\Events\OrderCreated;
-use App\Events\OrderDeliverd;
 use App\Interfaces\OrderReposiyInterface;
 
 class OrderReposity implements OrderReposiyInterface {
@@ -15,30 +12,36 @@ class OrderReposity implements OrderReposiyInterface {
         return Order::with('items')->where('status', '!=', 'delivered')->paginate($limit);
     }
 
-    public function store($data, $user) {
+    public function store($data) {
         return Order::create($data);
     }
 
-    public function showUserOrders($user) {
-        return Order::with('items')->where('user_id', $user->id)->where('status', '!=', 'delivered')->get();
+    public function showUserOrders() {
+        $user = auth()->user();
+        return Order::with('items')->where('user_id', $user->id)->where('status', '!=', 'delivered')->orderBy('id','desc')->get();
     }
 
     public function updateStatus($id, $status) {
-        $order = Order::find($id);
-        if (!$order) return false;
-
-        $order->update(['status' => $status]);
-        return true;
+        $order =$this->find($id);
+        if (!$order) {
+            return false;
+        }
+       return tap($order,function($order) use ($status) {
+         return $order->update(['status' => $status]);
+       });
     }
 
     public function cancel($id) {
-        $order = Order::find($id);
+        $order = $this->find($id);
         if (!$order) return false;
 
         if ($order->status === 'shipped') {
-            return ['error' => "Order can't be canceled because it's already shipped"];
+            return false;
         }
-        $order->update(['status' => 'canceled']);
-        return true;
+       return $order->update(['status' => 'canceled']);
+    }
+
+    public function find($id) {
+        return Order::find($id);
     }
 }

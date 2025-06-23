@@ -16,14 +16,11 @@ class ProductFactory extends Factory
      */
     public function definition(): array
     {
-        $name = $this->faker->words(2,true);
+        $name = $this->faker->name();
         return [
             "name" => $name,
             "description" => $this->faker->sentence(6,true),
-            "image" => $this->faker->imageUrl(300,300),
-            "image1" => $this->faker->imageUrl(300,300),
-            "image2" => $this->faker->imageUrl(300,300),
-            "image3" => $this->faker->imageUrl(300,300),
+            "image" =>'products/uSW4FcDibTHsen2yV44MhtRsCnJomRBk1GlJ3whT.jpg',
             "price" => $this->faker->randomDigit() * 10 ,
             "quantity" => $this->faker->randomDigit(),
             "category_id" =>22

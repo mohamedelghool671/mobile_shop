@@ -33,12 +33,12 @@ class CategoryRequest extends FormRequest
             $categoryId = request()->route('category')?->id ?? null;
                 return [
                     "name" => "required|string|unique:categories,name," . $categoryId,
-                    'category_image' => "image|mimes:png,jpg,jpeg"
+                    'category_image' => "image|mimes:png,jpg,jpeg,webp"
                 ];
         }
         return [
                 "name" => "required|string",
-                'category_image' => "required|image|mimes:png,jpg,jpeg"
+                'category_image' => "required|image|mimes:png,jpg,jpeg,webp"
         ];
     }
 }

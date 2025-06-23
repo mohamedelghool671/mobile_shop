@@ -7,19 +7,19 @@ use Illuminate\Http\Request;
 use App\Services\FavouriteService;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\FavouriteRequest;
+use App\Http\Resources\FavouriteResource;
 
 class FavouriteController extends Controller
 {
-    protected $favouriteService;
-
-    public function __construct(FavouriteService $favouriteService)
+    public function __construct(protected FavouriteService  $favouriteService)
     {
-        $this->favouriteService = $favouriteService;
     }
 
     public function index()
     {
-        return ApiResponse::sendResponse('favourites retrived succes',200,$this->favouriteService->getFavourites());
+        $data = $this->favouriteService->getFavourites();
+        return $data ?  ApiResponse::sendResponse('favourites retrived succes',200,FavouriteResource::collection($data)):
+        ApiResponse::sendResponse("favourite is empty",422);
     }
 
     public function store(FavouriteRequest $request)
@@ -29,9 +29,10 @@ class FavouriteController extends Controller
         ApiResponse::sendResponse('already exist',404);
     }
 
-    public function destroy($favouriteId)
+    public function destroy($productId)
     {
-        return $this->favouriteService->removeFromFavourites($favouriteId) ?
-        ApiResponse::sendResponse('this field deleted success') : ApiResponse::sendResponse('field does not exist');
+        return $this->favouriteService->removeFromFavourites($productId) ?
+        ApiResponse::sendResponse('this field deleted success') :
+        ApiResponse::sendResponse('field does not exist',404);
     }
 }

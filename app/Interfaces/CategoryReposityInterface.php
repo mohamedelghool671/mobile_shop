@@ -6,9 +6,8 @@ interface CategoryReposityInterface
 {
     public function all($limit);
 
-    public function create($request);
+    public function create($data);
 
-    public function update($request,$category);
+    public function update($data,$category);
 
-    public function delete($category);
 }

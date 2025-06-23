@@ -4,7 +4,7 @@ namespace App\Interfaces;
 
 interface FavouriteInterface
 {
-    public function getFavouritesForUser($userId);
-    public function add($userId, $productId);
-    public function remove($userId, $productId);
+    public function getFavouritesForUser();
+    public function add($productId);
+    public function remove($productId);
 }

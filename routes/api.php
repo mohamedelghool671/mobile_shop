@@ -3,6 +3,7 @@
 
 
 use App\Helpers\ApiResponse;
+use App\Http\Controllers\Api\AddressController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\PayController;
 use App\Http\Controllers\Api\CartController;
@@ -12,9 +13,12 @@ use App\Http\Controllers\Api\ContactController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\CategoryController;
+use App\Http\Controllers\Api\CobonController;
 use App\Http\Controllers\Api\FavouriteController;
+use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\MessageController;
-
+use App\Models\Cobon;
+use App\Models\User;
 
 Route::middleware(["auth:sanctum"])->group(function () {
     // comment Route
@@ -25,11 +29,11 @@ Route::middleware(["auth:sanctum"])->group(function () {
     Route::apiResource('cart',CartController::class);
     Route::put('/cart',[CartController::class,'update']);
     //  order
-    Route::apiResource('order',OrderController::class);
-    Route::get('/orders',[OrderController::class,'show']);
+    Route::apiResource('orders',OrderController::class);
+    Route::get('/order',[OrderController::class,'show']);
     // contact
     Route::post('/contact',[ContactController::class,'contact']);
-    Route::post('/contact/all',[ContactController::class,'all']);
+    Route::get('/contact/all',[ContactController::class,'all']);
     Route::post('/contact/response',[ContactController::class,'response']);
     // profile
     Route::put('profile',[ProfileController::class,'update']);
@@ -42,6 +46,19 @@ Route::middleware(["auth:sanctum"])->group(function () {
         Route::post('/pay','pay');
         Route::any('/pay/webhook','hook');
     });
+
+    // Address route
+    Route::put('address/{addres_id}',[AddressController::class,'updateAddress']);
+    Route::delete('address/{addres_id}',[AddressController::class,'deleteAddress']);
+    Route::apiResource('address',AddressController::class)->except(['update','show']);
+
+    // cobon route
+    Route::post('cobons/check',[CobonController::class,'check']);
+    Route::apiResource('cobons',CobonController::class)->except('show');
+
+    // notification route
+    Route::get('notification',[NotificationController::class,'all']);
+    Route::delete('notification',[NotificationController::class,'clear']);
 });
 // product visit
 Route::get('/products/visited-products', [ProductController::class, 'userVisitedProducts']);
@@ -61,9 +78,10 @@ Route::fallback(function() {
 });
 
 Route::post('/message',[MessageController::class,'store']);
-// Route::get('/test',function() {
-//     phpinfo();
-//     // dd(Product::with(['category','category'])->where('created_at','>',now()->subWeeks(3))->get()[1]);
-// });
+
+
+Route::get('learn',function() {
+
+});
 require __DIR__ . "/Api/auth.php";
 

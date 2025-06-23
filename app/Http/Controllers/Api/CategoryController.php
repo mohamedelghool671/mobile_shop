@@ -16,18 +16,22 @@ class CategoryController extends \Illuminate\Routing\Controller
 
     public function __construct(protected CategoryService $category)
     {
-        $this->middleware("auth:sanctum")->except(['index','show']);
+        $this->middleware("auth:sanctum");
         $this->middleware("admin")->only(["store","destroy","update"]);
     }
 
     public function index(Request $request)
     {
-            return $this->category->all($request->limit ?? 10);
+        $data = $this->category->all($request->limit ?? 10);
+        return $data ? ApiResponse::sendResponse("List of categories", 200, $data) :
+         ApiResponse::sendResponse("No categories found", 404);
     }
 
     public function store(CategoryRequest $request)
     {
-       return $this->category->create($request->validated());
+       $data = $this->category->create(fluent($request->validated()));
+       return $data ? ApiResponse::sendResponse("Category created successfully", 201, new CategoryResource($data)) :
+        ApiResponse::sendResponse("Category already exists", 422);
     }
 
     public function show(Category $category)
@@ -37,11 +41,14 @@ class CategoryController extends \Illuminate\Routing\Controller
 
     public function update(CategoryRequest $request,Category $category)
     {
-        return $this->category->update($request->validated(),$category);
+        $data = $this->category->update(fluent($request->validated()),$category);
+        return $data ? ApiResponse::sendResponse("Category updated successfully", 200, new CategoryResource($data)):
+        ApiResponse::sendResponse("Category already exists", 422);
     }
 
     public function destroy(Category $category)
     {
-        return $this->category->delete($category);
+         $this->category->delete($category) ;
+         return ApiResponse::sendResponse("Category deleted successfully", 200);
     }
 }

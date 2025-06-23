@@ -3,47 +3,42 @@
 namespace App\Services;
 
 use App\Helpers\Paginate;
-use App\Helpers\ApiResponse;
+use App\Helpers\SendNotification;
 use App\Http\Resources\ProductResource;
 use Illuminate\Support\Facades\Storage;
 use App\Interfaces\ProductReposityInterface;
-use Illuminate\Support\Facades\Cache;
 
 class ProductService
 {
     public function __construct(protected ProductReposityInterface $product){}
 
-    public function all($limit,$name) {
-        $products = $this->product->all($limit ?? 50,$name ?? null);
-        $data = Paginate::paginate($products, ProductResource::collection($products), 'products');
-        if ($data) {
-            return ApiResponse::sendResponse("List of products", 200, $data);
-        }
-        return ApiResponse::sendResponse("No products", 404);
+    public function all($limit,$category_id) {
+        $products = $this->product->all($limit ?? 50,$category_id ?? null);
+        return Paginate::paginate($products, ProductResource::collection($products), 'products');
     }
 
     public function create($data) {
-        $data['price'] = $data['price'] * 100;
-
+        $data['price'] = $data->price * 100;
         $imageNames = [];
-        if (isset($data['images']) && is_array($data['images'])) {
-            foreach ($data['images'] as $image) {
+        if ($data->images && is_array($data->images)) {
+            foreach ($data->images as $image) {
                $filename = Storage::disk('public')->putFile('gallery', $image);
                 $imageNames[] = $filename;
             }
         }
-        $data['image'] = Storage::disk('public')->putFile('products', $data['image']);
+        $data['image'] = Storage::disk('public')->putFile('products', $data->image);
         $data['images'] = json_encode($imageNames);
-        $product = $this->product->store($data);
-        return ApiResponse::sendResponse("Product created successfully", 201, new ProductResource($product));
+        $product = $this->product->store($data->toArray());
+        SendNotification::sendAll("New Product : $product->name","About Product : $product->description",('storage/'.$product->image));
+        return $product;
     }
 
-    public function show($product, $user) {
+    public function show($product) {
+        $user = auth()->user();
         if ($user) {
             $visit = $user->products()->where('product_id', $product->id)
                 ->where('user_id', $user->id)
                 ->first();
-
             if ($visit) {
                 $user->products()->updateExistingPivot($product->id, [
                     'visit_count' => $visit->pivot->visit_count + 1,
@@ -56,14 +51,14 @@ class ProductService
                 ]);
             }
         }
-        return ApiResponse::sendResponse("Product retrieved successfully", 200, new ProductResource($product));
+       return $product->load(['comment.user','users']);
     }
 
     public function update($product, $data) {
-        $data['price'] = $data['price'] * 100;
+        $data['price'] = $data->price * 100;
          $imageNames = [];
-    if (isset($data['images']) && is_array($data['images'])) {
-        foreach ($data['images'] as $image) {
+    if ($data->images && is_array($data->images)) {
+        foreach ($data->images as $image) {
             $filename = Storage::disk('public')->putFile('gallery', $image);
             if ($filename) {
                 $imageNames[] = $filename;
@@ -81,8 +76,7 @@ class ProductService
             $data['images'] = json_encode($imageNames);
         }
     }
-        $product = $this->product->update($product, $data);
-        return ApiResponse::sendResponse("Product updated successfully", 200, new ProductResource($product));
+       return $product = $this->product->update($product, $data->toArray());
     }
 
     public function delete($product) {
@@ -94,47 +88,34 @@ class ProductService
                     }
                 }
             }
-            $this->product->delete($product);
-            return ApiResponse::sendResponse("Product deleted successfully", 200);
+           return $this->product->delete($product);
         }
 
     public function latest() {
         $latest = $this->product->latest();
-        if ($latest) {
-            $data = Paginate::paginate($latest, ProductResource::collection($latest), "products");
-            if ($data) {
-                return ApiResponse::sendResponse("Latest products retrieved successfully", 200, $data);
-            }
-        }
-        return ApiResponse::sendResponse("No new products", 404);
+        return $data = Paginate::paginate($latest, ProductResource::collection($latest), "products");
     }
 
     public function userVisite($request) {
         $products = $this->product->userVisite($request);
         if ($products) {
-            $productsWithVisitCount = $products->map(function ($product) {
+             return $products->map(function ($product) {
                 $product->total_visits = $product->pivot->visit_count;
                 $product->last_visit = $product->pivot->last_visit;
                 return $product;
             });
-            return ApiResponse::sendResponse("User visited products retrieved successfully", 200, ProductResource::collection($productsWithVisitCount));
         }
-        return ApiResponse::sendResponse("No visits", 404);
     }
 
     public function allVisite() {
-        $products = $this->product->allVisite();
-        if ($products) {
-            return ApiResponse::sendResponse("Most visited products retrieved successfully", 200, ProductResource::collection($products));
-        }
-        return ApiResponse::sendResponse("No visits", 404);
+        return $this->product->allVisite();
     }
 
     public function search($query) {
         $product =  $this->product->search($query);
-        if ($product) {
-            return ApiResponse::sendResponse("Product retrieved successfully", 200,  ProductResource::collection($product));
+        if ($product->isEmpty()) {
+            return false;
         }
-          return ApiResponse::sendResponse("product not found",404);
+        return $product;
     }
 }

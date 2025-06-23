@@ -2,20 +2,18 @@
 
 namespace App\Providers;
 
-use App\Events\Register;
+
+use App\Interfaces\AddressReposityInterface;
 use Laravel\Sanctum\Sanctum;
-use App\Listeners\OrderCreated;
 use App\Reposities\CartReposity;
 use App\Reposities\UserReposity;
 use App\Reposities\OrderReposity;
 use App\Reposities\CommentReposity;
 use App\Reposities\ContactReposity;
 use App\Reposities\ProductReposity;
-
 use App\Reposities\ProfileReposity;
 use App\Reposities\CategoryReposity;
 use App\Reposities\FavouriteReposity;
-use Illuminate\Support\Facades\Event;
 use App\Interfaces\FavouriteInterface;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Sanctum\PersonalAccessToken;
@@ -27,7 +25,9 @@ use App\Interfaces\ContactReposiyInterface;
 use App\Interfaces\ProfileReposiyInterface;
 use App\Interfaces\ProductReposityInterface;
 use App\Interfaces\CategoryReposityInterface;
-use App\Listeners\Register as ListenersRegister;
+use App\Interfaces\CobonReposityInterface;
+use App\Reposities\AddressReposity;
+use App\Reposities\CobonReposity;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -45,7 +45,8 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(OrderReposiyInterface::class,OrderReposity::class);
         $this->app->bind(ProfileReposiyInterface::class,ProfileReposity::class);
         $this->app->bind(FavouriteInterface::class, FavouriteReposity::class);
-
+        $this->app->bind(AddressReposityInterface::class, AddressReposity::class);
+        $this->app->bind(CobonReposityInterface::class, CobonReposity::class);
     }
 
     /**

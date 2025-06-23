@@ -1,4 +1,15 @@
 <?php return array (
+  'kreait/laravel-firebase' => 
+  array (
+    'aliases' => 
+    array (
+      'Firebase' => 'Kreait\\Laravel\\Firebase\\Facades\\Firebase',
+    ),
+    'providers' => 
+    array (
+      0 => 'Kreait\\Laravel\\Firebase\\ServiceProvider',
+    ),
+  ),
   'laravel/breeze' => 
   array (
     'providers' => 
@@ -18,18 +29,6 @@
     'providers' => 
     array (
       0 => 'Laravel\\Pail\\PailServiceProvider',
-    ),
-  ),
-  'laravel/reverb' => 
-  array (
-    'aliases' => 
-    array (
-      'Output' => 'Laravel\\Reverb\\Output',
-    ),
-    'providers' => 
-    array (
-      0 => 'Laravel\\Reverb\\ApplicationManagerServiceProvider',
-      1 => 'Laravel\\Reverb\\ReverbServiceProvider',
     ),
   ),
   'laravel/sail' => 

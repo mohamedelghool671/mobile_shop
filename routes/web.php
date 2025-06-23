@@ -1,25 +1,16 @@
 <?php
 
-use App\Models\Product;
-use App\Models\User;
+
 use Illuminate\Support\Facades\Route;
-use Barryvdh\Debugbar\Facades\Debugbar;
 use Illuminate\Support\Facades\Broadcast;
-use Illuminate\Support\Facades\Cache;
+use App\Http\Controllers\Api\PayController;
 
-
-Route::get('test',function() {
-    $users = Cache::remember('products',30,function() {
-        return Product::limit(5000)->get();
-    });
-    return view('welcome',get_defined_vars());
-});
+Route::any('/hook',[PayController::class,'hook']);
 
 Route::get('/',function() {
-     abort(403,'page not found');
-});
-
+    abort(403,'page not found');
+})->middleware("throttle:1,1");
 
 Route::view('listen','welcome');
 Broadcast::routes();
-require __DIR__.'/auth.php';
+

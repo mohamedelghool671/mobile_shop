@@ -17,8 +17,8 @@
         display: inline-block;
         font-size: 28px;
         font-weight: bold;
-        color: #fff;
-        background: linear-gradient(135deg, #ff416c, #ff4b2b);
+        color:red;
+        /* background: linear-gradient(135deg, #ff416c, #ff4b2b); */
         padding: 15px 30px;
         border-radius: 8px;
         letter-spacing: 3px;

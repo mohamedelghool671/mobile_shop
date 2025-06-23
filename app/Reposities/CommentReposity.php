@@ -9,7 +9,7 @@ class CommentReposity implements CommentReposiyInterface
 {
     public function paginate($limit = 10)
     {
-        return Comment::paginate($limit);
+        return Comment::with(['product','user'])->paginate($limit);
     }
 
     public function create(array $data)
@@ -19,16 +19,13 @@ class CommentReposity implements CommentReposiyInterface
 
     public function update($comment, array $data)
     {
-        return $comment->update($data);
-    }
-
-    public function delete($comment)
-    {
-        return $comment->delete();
+        return tap($comment,function($comment) use ($data) {
+            return $comment->update($data);
+        });
     }
 
     public function latest($limit = 10)
     {
-        return Comment::latest('id')->paginate($limit);
+        return Comment::with(['product','user'])->latest('id')->paginate($limit);
     }
 }

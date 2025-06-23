@@ -4,15 +4,15 @@ namespace App\Interfaces;
 
 interface UserReposityInterface
 {
-    public function create($request);
+    public function create($data);
 
-    public function login($request);
+    public function verfiy($data);
 
-    public function logout($request);
+    public function resendVerfication($data);
 
-    public function forgetPassword($request,$email);
+    public function forgetPassword($data,$email);
 
-    public function checkResetCode($request);
+    public function checkResetCode($data);
 
-    public function resetPassword($request,$email);
+    public function resetPassword($data,$email);
 }

@@ -35,23 +35,22 @@ class ProductRequest extends FormRequest
 
         if (request()->method() === 'PUT') {
             return [
-                "name" => "required|string|max:20",
-                "description" => "required|string|max:100",
-                "image" => "mimes:png,jpg,jpeg|image",
+                "name" => "required|string|max:50",
+                "description" => "required|string|max:500",
+                "image" => "mimes:png,jpg,jpeg,webp|image",
                 'images' => 'nullable|array',
-                'images.*' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+                'images.*' => 'image|mimes:jpeg,png,jpg,webp|max:2048',
                 "price" => "required|numeric",
                 "quantity" => "required|integer",
                 "category_id" => "required|exists:categories,id"
             ];
         }
-
         return [
-        "name" => "required|string|max:20",
-        "description" => "required|string|max:100",
-        "image" => "required|mimes:png,jpg,jpeg|image",
+        "name" => "required|string|max:50",
+        "description" => "required|string|max:500",
+        "image" => "required|mimes:png,jpg,jpeg,webp|image",
         'images' => 'nullable|array',
-        'images.*' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+        'images.*' => 'image|mimes:jpeg,png,jpg,webp|max:2048',
         "price" => "required|numeric",
         "quantity" => "required|integer",
         "category_id" => "required|exists:categories,id"

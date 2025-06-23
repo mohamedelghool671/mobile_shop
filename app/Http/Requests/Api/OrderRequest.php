@@ -7,8 +7,6 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Validation\ValidationException;
 
-
-
 class OrderRequest extends FormRequest
 {
     /**
@@ -33,22 +31,11 @@ class OrderRequest extends FormRequest
     public function rules(): array
     {
         return [
-            "user_first_name" => "required|string",
-            "user_last_name" => "required|string"
-            ,"phone" => "required|string",
-            "email" => "required|email",
-            "city" => "required|string",
-            "governorate" => "required|string",
-            "address" => "required|string",
-            "country" => "required|string",
-            "postal_code" =>"required|string|min:5|max:5",
-            "gift_recipient_phone" => "string",
-            "gift_recipient_name" => "string",
-            "gift_recipient_city" => "string",
-            "gift_recipient_governorate" => "string",
-            "gift_recipient_address" => "string",
-            "gift_recipient_country" => "string",
-            "gift_recipient_postal_code" => "string|min:5|max:5",
+            "name" => "required|string|max:50",
+            "phone" => "required|string|max:20",
+            "city" => "required|string|max:250",
+            "street" => "required|string|max:250",
+            "postal_code" => "required|numeric|digits:5",
         ];
     }
 }

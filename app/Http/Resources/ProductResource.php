@@ -8,6 +8,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class ProductResource extends JsonResource
 {
+
     /**
      * Transform the resource into an array.
      *
@@ -16,8 +17,8 @@ class ProductResource extends JsonResource
     public function toArray(Request $request): array
     {
         $last = $this->total_visits;
+       $is_favourite = $this->is_favourite ? 1 : 0;
         if ($last) {
-
             return [
                 "product_name" => $this->name ,
                 "product_id" => $this->id ,
@@ -32,8 +33,19 @@ class ProductResource extends JsonResource
                     "category_name" => $this->category->name,
                     "category_id" => $this->category->id
                 ],
-                "rating" => $this->comment->avg('rating') ?? 0,
-                "number_rating" => $this->comment->count('rating') ?? 0,
+                "comments" => $this->comment->map(function($comment) {
+                 return [
+                    "id" => $comment->id,
+                    "content" => $comment->content,
+                    "rating" => $comment->rating ? $comment->rating : 0,
+                    "user"=>$comment->user->name ?? null ,
+                    "time" => $comment->created_at->setTimezone(config('app.Time_Zone'))->format('Y/m/d h:i A')
+
+                ];
+                }),
+                'is_favourite' => $is_favourite ,
+                "rating" =>$this->rating ? round($this->rating,1) : 0,
+                "number_rating" =>$this->comment->avg('rating') === null ? 0 :$this->comment->count('rating'),
                 "total_visits" => $this->total_visits ?? 0,
                 "last_visit" =>Carbon::parse($this->last_visit)->setTimezone('Africa/Cairo')->longAbsoluteDiffForHumans() ?? null
             ];
@@ -52,9 +64,19 @@ class ProductResource extends JsonResource
                 "category_name" => $this->category->name,
                 "category_id" => $this->category->id
             ],
-            "rating" => $this->comment->avg('rating') ?? 0,
-            "number_rating" => $this->comment->count('rating') ?? 0,
-        ];
+            "comments" => $this->comment->map(function($comment) {
+                return [
+                    "id" => $comment->id,
+                    "content" => $comment->content,
+                    "rating" => $comment->rating ? $comment->rating : 0,
+                    "user"=>$comment->user->name ?? null ,
+                    "time" => $comment->created_at->setTimezone(config('app.Time_Zone'))->format('Y/m/d h:i A')
 
+                ];
+            }),
+            'is_favourite' => $is_favourite ,
+            "rating" => $this->rating ? round($this->rating,1) : 0,
+            "number_rating" =>$this->comment->avg('rating') === null ? 0 :$this->comment->count('rating'),
+        ];
     }
 }

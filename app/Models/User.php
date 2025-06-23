@@ -18,6 +18,24 @@ class User extends Authenticatable implements MustVerifyEmail
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable,HasApiTokens,Billable;
 
+    // firebase notification section
+    public function deviceTokens()
+    {
+        return $this->hasMany(DeviceToken::class);
+    }
+
+    public function getDeviceTokens()
+    {
+        return $this->deviceTokens()->pluck('token')->toArray();
+    }
+
+     public function routeNotificationForFcm()
+    {
+        return $this->getDeviceTokens();
+    }
+
+
+    // relations
     public function message() {
         return $this->hasMany(Message::class);
     }
@@ -88,5 +106,9 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->belongsToMany(Product::class, 'product_views')
                     ->withPivot('visit_count', 'last_visit');
+    }
+
+    public function cobons() {
+        return $this->belongsToMany(Cobon::class,'user_cobon','user_id','cobon_id')->withTimestamps();
     }
 }

@@ -6,6 +6,7 @@ use App\Helpers\ApiResponse;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Validation\Rule;
 
 class ProfileRequest extends FormRequest
 {
@@ -28,11 +29,11 @@ class ProfileRequest extends FormRequest
     public function rules(): array
     {
         return [
-            "name" => "required|string|min:6|max:20",
-            "email" => "required|email",
+            "name" => "required|string|min:1|max:20",
+            "email" => ["required","email",Rule::unique('users')->ignore(auth()->id())],
             "address" => "required|string|max:50",
             "phone" => "required|string|max:11",
-            "image" => "image|mimes:png,jpg,jpeg",
+            "image" => "nullable|image|mimes:png,jpg,jpeg",
             "current_password" => "string|max:20|min:8",
             "password" => "nullable|string|confirmed|min:8|max:20"
         ];

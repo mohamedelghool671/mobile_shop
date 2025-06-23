@@ -16,19 +16,16 @@ class FavouriteService
 
     public function getFavourites()
     {
-        $userId = auth()->id();
-        return FavouriteResource::collection($this->favouriteRepo->getFavouritesForUser($userId));
+        return $this->favouriteRepo->getFavouritesForUser();
     }
 
     public function addToFavourites($productId)
     {
-        $userId = auth()->id();
-        return $this->favouriteRepo->add($userId, $productId);
+        return $this->favouriteRepo->add($productId);
     }
 
-    public function removeFromFavourites($favouriteId)
+    public function removeFromFavourites($productId)
     {
-        $userId = auth()->id();
-        return $this->favouriteRepo->remove($userId, $favouriteId);
+        return $this->favouriteRepo->remove($productId);
     }
 }

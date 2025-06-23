@@ -23,7 +23,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin' => AdminMiddleware::class
         ]);
         $middleware->validateCsrfTokens(except: [
-            'api/pay/webhook',
+          'stripe/webhook',
+          'hook'
         ]);
     })
 

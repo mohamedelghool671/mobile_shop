@@ -18,37 +18,25 @@ class CommentService
         return $data ? ApiResponse::sendResponse("list of comments", 200, $data) : ApiResponse::sendResponse("no comments", 422);
     }
 
-    public function store($data, $userId)
+    public function store($data)
     {
+        $userId = auth()->id();
         $data['user_id'] = $userId;
-        $this->commentRepo->create($data);
-        return ApiResponse::sendResponse("comment publish success");
+        return $this->commentRepo->create($data->toArray());
     }
 
-    public function show($comment)
+    public function update($data, $comment)
     {
-        return ApiResponse::sendResponse("comment return success", 200, new CommentResource($comment));
-    }
-
-    public function update($data, $comment, $userId)
-    {
+        $userId = auth()->id();
         if ($comment->user_id != $userId) {
-            return ApiResponse::sendResponse("UnAuthorized", 422);
+            return false;
         }
-        $this->commentRepo->update($comment, $data);
-        return ApiResponse::sendResponse("comment update success");
-    }
-
-    public function destroy($comment)
-    {
-        $this->commentRepo->delete($comment);
-        return ApiResponse::sendResponse("comment delete success");
+        return $this->commentRepo->update($comment, $data->toArray());
     }
 
     public function latestComments($limit = 10)
     {
         $latest = $this->commentRepo->latest($limit);
-        $data = Paginate::paginate($latest, CommentResource::collection($latest), "comments");
-        return $data ? ApiResponse::sendResponse("latest comments", 200, $data) : ApiResponse::sendResponse("no new comment", 422);
+        return Paginate::paginate($latest, CommentResource::collection($latest), "comments");
     }
 }

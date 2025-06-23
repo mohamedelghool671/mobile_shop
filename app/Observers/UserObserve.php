@@ -12,6 +12,11 @@ class UserObserve
      */
     public function created(User $user): void
     {
+        $user->profile()->create([
+                'name' => $user->name,
+                "email" => $user->email,
+                "phone" => $user->phone ?? null
+            ]);
          event(new RegisterVerfiyEvent($user));
     }
 

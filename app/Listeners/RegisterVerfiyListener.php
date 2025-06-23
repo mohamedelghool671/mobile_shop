@@ -25,7 +25,7 @@ class RegisterVerfiyListener
     {
          $user=$event->user;
          if ($user) {
-             dispatch(new EmailVerficationJob($user))->delay(5);
+             dispatch(new EmailVerficationJob($user))->withoutDelay();
          }
     }
 }

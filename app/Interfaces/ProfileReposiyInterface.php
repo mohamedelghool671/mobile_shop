@@ -4,8 +4,8 @@ namespace App\Interfaces;
 
 interface ProfileReposiyInterface
 {
-    public function show($request);
+    public function show();
 
-    public function update($profile,$request);
+    public function update($profile,$data);
 
 }
