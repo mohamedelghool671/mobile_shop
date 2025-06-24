@@ -43,7 +43,7 @@ class OrderController extends Controller
     public function update($id, Request $request)
     {
         $data = Validator::make($request->all(), [
-            'status' => ['required', 'in:pending,canceled,packing,shipped,out for delivery,delivered'],
+            'status' => ['required','in:pending,shipped,delivered'],
         ]);
         if ($data->fails()) {
             return ApiResponse::sendResponse("validation error", 422, $data->errors());

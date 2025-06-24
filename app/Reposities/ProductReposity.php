@@ -9,7 +9,7 @@ use App\Interfaces\ProductReposityInterface;
 
 class ProductReposity implements ProductReposityInterface
 {
-    public function all($limit, $category_id)
+    public function all($limit = 20, $category_id)
     {
         $key = 'products_' . ($category_id ?? 'all') . '_' . ($limit ?? 'default');
         return Cache::remember($key, 60, function () use ($limit, $category_id) {

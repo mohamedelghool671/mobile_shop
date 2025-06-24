@@ -17,8 +17,7 @@ use App\Http\Controllers\Api\CobonController;
 use App\Http\Controllers\Api\FavouriteController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\MessageController;
-use App\Models\Cobon;
-use App\Models\User;
+
 
 Route::middleware(["auth:sanctum"])->group(function () {
     // comment Route

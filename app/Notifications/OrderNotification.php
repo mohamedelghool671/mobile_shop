@@ -43,7 +43,8 @@ class OrderNotification extends Notification
     public function toDatabase(object $notifiable){
         return [
             'title' => $this->message['title'],
-            'body' => $this->message['body']
+            'body' => $this->message['body'],
+            "image" => $this->message['image']
         ];
     }
 

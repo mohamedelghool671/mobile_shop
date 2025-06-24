@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Helpers\Paginate;
 use App\Helpers\SendNotification;
+use Illuminate\Support\Facades\DB;
 use App\Http\Resources\ProductResource;
 use Illuminate\Support\Facades\Storage;
 use App\Interfaces\ProductReposityInterface;
@@ -33,26 +34,35 @@ class ProductService
         return $product;
     }
 
-    public function show($product) {
-        $user = auth()->user();
-        if ($user) {
-            $visit = $user->products()->where('product_id', $product->id)
-                ->where('user_id', $user->id)
-                ->first();
-            if ($visit) {
-                $user->products()->updateExistingPivot($product->id, [
-                    'visit_count' => $visit->pivot->visit_count + 1,
-                    'last_visit' => now(),
-                ]);
-            } else {
-                $user->products()->attach($product->id, [
-                    'visit_count' => 1,
-                    'last_visit' => now(),
-                ]);
-            }
+public function show($product) {
+    $user = auth()->user();
+
+    if ($user) {
+        $visit = $user->products()
+            ->where('product_id', $product->id)
+            ->first();
+
+        if ($visit) {
+            $user->products()->updateExistingPivot($product->id, [
+                'visit_count' => $visit->pivot->visit_count + 1,
+                'last_visit' => now(),
+            ]);
+        } else {
+            $user->products()->attach($product->id, [
+                'visit_count' => 1,
+                'last_visit' => now(),
+            ]);
         }
-       return $product->load(['comment.user','users']);
     }
+    $product->load(['comment.user', 'users']);
+    $product->loadCount([
+        'comment as rating' => function ($q) {
+            $q->select(DB::raw('avg(rating)'));
+        }
+    ]);
+
+    return $product;
+}
 
     public function update($product, $data) {
         $data['price'] = $data->price * 100;

@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string("street");
             $table->string("city");
             $table->string("postal_code");
-            $table->enum("status",["pending","canceled",'paid',"delivered","out for delivery","shipped","packing"])->default("pending");
+            $table->enum("status",["pending","canceled",'paid',"delivered","shipped"])->default("pending");
             $table->foreignId("user_id")->constrained("users","id")->cascadeOnDelete()->cascadeOnUpdate();
             $table->timestamps();
         });

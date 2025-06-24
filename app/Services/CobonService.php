@@ -17,7 +17,7 @@ class CobonService
 
     public function store($data) {
         $cobon =  $this->cobon->store($data->toArray());
-        SendNotification::sendAll("New cobon : $cobon->name","About this cobon : $cobon->desc",null);
+        SendNotification::sendAll("New cobon : $cobon->name","About this cobon : $cobon->desc","images/newCobons.jpg");
         return $cobon;
     }
 
