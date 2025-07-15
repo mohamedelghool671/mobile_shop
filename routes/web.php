@@ -9,7 +9,7 @@ Route::any('/hook',[PayController::class,'hook']);
 
 Route::get('/',function() {
     abort(403,'page not found');
-})->middleware("throttle:1,1");
+})->middleware("throttle:10,1");
 
 Route::view('listen','welcome');
 Broadcast::routes();

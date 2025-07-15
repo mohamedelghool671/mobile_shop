@@ -36,7 +36,6 @@ class ProductService
 
 public function show($product) {
     $user = auth()->user();
-
     if ($user) {
         $visit = $user->products()
             ->where('product_id', $product->id)

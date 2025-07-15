@@ -55,8 +55,8 @@ class OrderService
     {
         $order = $this->orderRepository->updateStatus($id, $status);
         SendNotification::sendTo($order->user,[
-            "title" => "order status",
-            "body" => "yor order is $order->status please wait ",
+            "title" => "your order status",
+            "body" => "yor order is $order->status success please wait process complet",
             "image" => [
                 "delivered" => "images/delivered.jpg",
                 "shipped" => "images/shipped.jpg"
